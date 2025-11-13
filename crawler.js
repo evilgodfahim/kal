@@ -1,5 +1,5 @@
 import { PlaywrightCrawler } from '@crawlee/playwright';
-import { saveArticle } from './xmlManager.js';
+import { saveArticle, loadXML } from './xmlManager.js';
 
 const BASE_URL = 'https://www.kalbela.com/ajkerpatrika';
 
@@ -24,19 +24,32 @@ const crawler = new PlaywrightCrawler({
             }).filter(a => a.title && a.link);
         });
 
-        // Save to XML
+        console.log(`Found ${articles.length} articles.`);
+
+        // Load existing XML
+        const xmlData = await loadXML();
+
+        // Add new articles if any
         for (const article of articles) {
-            await saveArticle({
+            // Prepend newest first
+            xmlData.rss.channel.item.unshift({
                 title: article.title,
                 link: article.link,
-                image: article.image || '',
-                date: new Date().toISOString(),
+                description: article.image ? `<img src="${article.image}" />` : '',
+                pubDate: new Date().toUTCString()
             });
         }
 
-        console.log(`Saved ${articles.length} articles.`);
+        // Keep only MAX_ITEMS
+        xmlData.rss.channel.item = xmlData.rss.channel.item.slice(0, 500);
+
+        // Always write XML, even if no new articles
+        await saveArticle({ forceData: xmlData });
+
+        console.log('XML updated.');
     },
 });
 
+// Run crawler
 await crawler.run([BASE_URL]);
 console.log('Scraping done.');
