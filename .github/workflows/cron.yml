@@ -1,4 +1,5 @@
 name: Hourly Kalbela Scraper
+
 on:
   schedule:
     - cron: '0 * * * *'  # every hour
@@ -8,27 +9,36 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout repo
       - uses: actions/checkout@v3
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
+      # 3. Install npm dependencies
       - name: Install Dependencies
         run: npm install
 
-      # <--- ADD THIS STEP TO INSTALL BROWSERS
+      # 4. Install Playwright browsers (Chromium, Firefox, WebKit)
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # 5. Run the scraper
       - name: Run Scraper
         run: node crawler.js
 
+      # 6. Commit XML only if there are changes
       - name: Commit XML
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add articles.xml
-          git commit -m "Update articles"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Update articles"
+            git push
+          else
+            echo "No changes to commit"
+          fi
