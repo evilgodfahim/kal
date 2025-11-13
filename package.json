@@ -8,6 +8,7 @@
   "dependencies": {
     "@crawlee/playwright": "^3.4.0",
     "fs-extra": "^11.1.1",
-    "xml2js": "^0.5.0"
+    "xml2js": "^0.5.0",
+    "playwright": "^1.44.0"
   }
 }
