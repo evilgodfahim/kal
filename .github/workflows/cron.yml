@@ -1,0 +1,26 @@
+name: Hourly Kalbela Scraper
+on:
+  schedule:
+    - cron: '0 * * * *' # every hour
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Scraper
+        run: node crawler.js
+      - name: Commit XML
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add articles.xml
+          git commit -m "Update articles"
+          git push
