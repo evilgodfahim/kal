@@ -1,7 +1,7 @@
 name: Hourly Kalbela Scraper
 on:
   schedule:
-    - cron: '0 * * * *' # every hour
+    - cron: '0 * * * *'  # every hour
   workflow_dispatch:
 
 jobs:
@@ -9,14 +9,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+
       - name: Install Dependencies
         run: npm install
+
+      # <--- ADD THIS STEP TO INSTALL BROWSERS
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
       - name: Run Scraper
         run: node crawler.js
+
       - name: Commit XML
         run: |
           git config user.name "github-actions"
