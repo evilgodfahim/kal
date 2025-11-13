@@ -7,14 +7,14 @@ const crawler = new PlaywrightCrawler({
     headless: true,
     launchContext: {
         launchOptions: {
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        },
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        }
     },
     async requestHandler({ page }) {
         // Wait for the news cards to load
         await page.waitForSelector('.common-card-content');
 
-        // Extract articles
+        // Extract all articles
         const articles = await page.$$eval('.common-card-content', cards => {
             return cards.map(card => {
                 const title = card.querySelector('h5.title')?.innerText.trim();
@@ -24,7 +24,7 @@ const crawler = new PlaywrightCrawler({
             }).filter(a => a.title && a.link);
         });
 
-        // Save each article to XML
+        // Save to XML
         for (const article of articles) {
             await saveArticle({
                 title: article.title,
