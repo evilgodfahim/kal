@@ -1,5 +1,5 @@
 import { PlaywrightCrawler } from '@crawlee/playwright';
-import { saveArticle, loadXML } from './xmlManager.js';
+import { saveArticle } from './xmlManager.js';
 
 const BASE_URL = 'https://www.kalbela.com/ajkerpatrika';
 
@@ -26,27 +26,28 @@ const crawler = new PlaywrightCrawler({
 
         console.log(`Found ${articles.length} articles.`);
 
-        // Load existing XML
-        const xmlData = await loadXML();
+        // Create fresh XML with only current articles
+        const xmlData = {
+            rss: {
+                $: { version: '2.0' },
+                channel: {
+                    title: "Kalbela News",
+                    link: "https://www.kalbela.com/ajkerpatrika",
+                    description: "Latest news from Kalbela.com",
+                    item: articles.map(article => ({
+                        title: article.title,
+                        link: article.link,
+                        description: article.image ? `<img src="${article.image}" />` : '',
+                        pubDate: new Date().toUTCString()
+                    }))
+                }
+            }
+        };
 
-        // Add new articles if any
-        for (const article of articles) {
-            // Prepend newest first
-            xmlData.rss.channel.item.unshift({
-                title: article.title,
-                link: article.link,
-                description: article.image ? `<img src="${article.image}" />` : '',
-                pubDate: new Date().toUTCString()
-            });
-        }
-
-        // Keep only MAX_ITEMS
-        xmlData.rss.channel.item = xmlData.rss.channel.item.slice(0, 500);
-
-        // Always write XML, even if no new articles
+        // Write fresh XML
         await saveArticle({ forceData: xmlData });
 
-        console.log('XML updated.');
+        console.log('XML updated with fresh articles.');
     },
 });
 
