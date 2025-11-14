@@ -32,11 +32,11 @@ jobs:
       - name: Run Scraper
         run: node crawler.js
 
-      # 6. Commit XML only if there are changes
+      # 6. Commit XML (always overwrite)
       - name: Commit XML
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add articles.xml
-          git diff --cached --quiet || git commit -m "Update articles"
+          git add -f articles.xml
+          git commit -m "Update articles - $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || echo "No changes"
           git push
